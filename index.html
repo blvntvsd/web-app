@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Каталог</title>
+<meta name="apple-mobile-web-app-title" content="Каталог">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<!--<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />-->
+<!--<link rel="stylesheet" href="style.css">-->
+<link rel="apple-touch-icon" href="icon.png">
+<style type="text/css">
+html,body{padding:0;margin:0;}
+body{font-family: Arial, sans-serif; font-size:16px; background-color:#f7f7f7; -webkit-user-select:none; -webkit-tap-highlight-color:transparent;}
+a{text-decoration:none; color:gray;}
+#wrapper{position:absolute; width:100%; height:100%;}
+
+#panel{position:absolute; display:flex; flex-direction:row; font-size:19px; justify-content:space-between; align-items:center; width:inherit; height:45px; overflow:hidden; background-color:#b538b6; color:white; text-align:center; cursor:default;}
+#panel-bg{width:inherit; height:45px;}
+#panel #btn{width:45px; height:45px; cursor:pointer; background-color:#b538b6; display:flex; justify-content:center; align-items:center;}
+#panel #btn img{width:25px; height:25px;}
+#panel #btn:hover{opacity:0.7;}
+#panel .title{font-weight:500px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+#list,#list2,#list3,#list4{width:100%; height:calc(100%); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+#list3,#list4{text-align:center;}
+
+input[type=text]{width:calc(100% - 20px); margin-bottom:10px; background-color:#e8e8e8; border:1px solid #bcbcbc; outline:none; padding:10px; border-radius:10px; font-size:16px;}
+
+#content{margin:10px auto; width:calc(100% - 20px); max-width:460px;}
+#content #title{margin:10px; text-align:center; font-size:18px;}
+#content #btn{display:inline-block; width:100%; max-width:460px; margin:5px auto; text-align:center; background-color:#9419ac; color:white; padding:12px 0; border-radius:10px;}
+#content #btn:active{background-color:#b538b6;;}
+
+#items{margin:10px auto; width:calc(100% - 20px); font-size:14px; border:1px solid #dadada; background-color:#eeeeee; oveflow:hidden;}
+#list #items #item{display:flex; flex-direction:row; justify-content:space-between; align-items:center; cursor:pointer; height:44px; border-bottom:1px solid #dfdfdf; overflow:hidden;}
+#list #items #item:hover{background-color:#ededed;}
+#list #items #item #title{margin-left:8px; margin-right:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+#list #items #item #index{margin-right:10px; margin-left:4px; color:#454545; font-size:13px; white-space:nowrap; text-align:right; font-weight:bold;}
+#list #items #item:last-child{border-bottom:0;}
+
+#list2, #list3, #list4{display:none;}
+
+#pageContent{border: 1px solid #dadada; background-color: #eeeeee; margin-bottom:15px; font-size:15px; padding:5px; text-align:center;}
+#pageContent img{max-width:100%;}
+</style>
+<script type="text/javascript">
+let Items = [];
+
+Items.push(['0', 'О нас', '<img src="items/about.png"><br><br><b>Кафе «Сладкоешка»</b> — уютное место с изысканными кондитерскими изделиями hand-made. <h2>История создания</h2> Все началось с одного домашнего торта, который стал первым шагом к большому делу. Маленькая кухня, увлеченность выпечкой и желание радовать близких привели к первым заказам. Постепенно о десертах узнавало все больше людей, и семейное дело выросло в полноценную кондитерскую. Через десятилетие появилось собственное производство, расширился ассортимент, появились преданные гости, ценящие натуральные ингредиенты и домашний вкус. Так «Сладкоешка» стала местом, где каждый десерт — это история, сотканная из традиций, вдохновения и мастерства.']);
+Items.push(['0', 'Контакты', '<img src="items/contacts.png"><b>Контакт-центр:</b><br><br><b>+7 000 000 00 00</b><br>Время работы: Пн.–Вс. 07:00 – 23:00<br>Адрес центрального офиса:<br>г. ...']);
+
+let SkipCatLayout = false;
+
+function GetData(URL){
+	return new Promise(function(resolve, reject) {
+		let request = new XMLHttpRequest();
+		
+		request.open('GET', URL, true);
+		
+		request.onload = function() {
+			if	(request.status == 200)
+				resolve(request.responseText);
+			else
+				reject();
+		}
+		
+		request.onerror = function() {
+			reject();
+		};
+		
+		request.send();
+	});
+}
+
+function showItem(n) {
+	document.getElementById('list').style.display = 'none';
+	document.getElementById('list4').style.display = 'none';
+	document.getElementById('list2').style.display = 'block';
+	document.getElementsByClassName('title')[1].innerHTML = Items[n][1];
+	document.getElementById('pageContent').innerHTML = Items[n][2];
+}
+
+function showData(name, cat) {
+	SkipCatLayout = true;
+	document.getElementById('list').style.display = 'none';
+	document.getElementById('list4').style.display = 'none';
+	document.getElementById('list2').style.display = 'block';
+	
+	GetData('/data.php?' + cat).then(function(responseText) {
+		let List = responseText.split(/\n/);
+		document.getElementById('pageContent').innerHTML = '';
+		for (let i = 0; i < List.length; i++)
+			if (List[i].trim() != '') {
+				let List2 = List[i].trim().split('|');
+				document.getElementById('pageContent').innerHTML += '<img src="/' + List2[3] + '"><br><b>Название:</b> ' + List2[0] + '<br><b>Вес:</b> ' + List2[1] + '<br> ' + List2[2] + '<br><br>';
+			}
+	}).catch(function() {
+		console.log('Сервер недоступен');
+	});
+	
+	document.getElementsByClassName('title')[1].innerHTML = name;
+}
+
+function showCatItems(n, item) {
+	SkipCatLayout = false;
+	document.getElementById('list').style.display = 'none';
+	document.getElementById('list4').style.display = 'block';
+	document.getElementById('sub-title2').innerHTML = item.innerText;
+	document.getElementsByClassName('items2')[0].innerHTML = '';
+	
+	let Results = [];
+	ResultCount = 0;
+
+	for (let i = 0; i < Items.length; i++) {
+		if (Items[i][0] != n) continue;
+		Results[ResultCount] = [i, Items[i][2]];
+		ResultCount += 1;
+		console.log(Items[i][2]);
+	}
+	
+	for (let i = 0; i < Results.length; i++) 
+
+		document.getElementsByClassName('items2')[0].innerHTML += '<div id="item" onclick="showItem(' + Results[i][0] + ')">' + 
+		'<div id="title">' + Items[Results[i][0]][1] + '</div></div>';
+
+}
+
+function backToMain() {
+	SkipCatLayout = false;
+	document.getElementById('list4').style.display = 'none';
+	document.getElementById('list2').style.display = 'none';
+	document.getElementById('list').style.display = 'block';
+}
+
+function goToCategory() {
+	if (SkipCatLayout) {
+		backToMain();
+		return;
+	}
+	document.getElementById('list4').style.display = 'block';
+	document.getElementById('list2').style.display = 'none';
+	document.getElementById('list').style.display = 'none';
+}
+
+//Инициализация
+document.addEventListener('DOMContentLoaded', function(){
+	//
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+	<div id="list">
+		<div id="panel">
+			<div id="btn" style="visibility:hidden"><img src="images/back.png" /></div>		
+			<div class="title">Меню</div>
+			<div id="btn" style="visibility:hidden"><img src="images/back.png" /></div>			
+		</div>
+		<div id="panel-bg"></div>
+		
+		<div id="content">
+			<div style="padding:5px; text-align:center;"><img src="images/logo.png" height="70px;" /> 
+			</div>
+			<!--<div id="btn" onclick="showCatItems(0, this)">Категория</div>-->
+			<div id="btn" onclick="showData('Торты','cat=1')">Торты</div>
+			<div id="btn" onclick="showData('Десерты','cat=2')">Десерты</div>
+			<div id="btn" onclick="showData('Напитки','cat=3')">Напитки</div>
+			<div id="btn" onclick="showItem(0);SkipCatLayout=true;">О нас</div>
+			<div id="btn" onclick="showItem(1);SkipCatLayout=true;">Контакты</div>
+		</div>
+	</div>
+	
+	<div id="list2">
+		<div id="panel">
+			<div id="btn" onclick="goToCategory()"><img src="images/back.png" /></div>
+			<div class="title">-</div>
+			<div id="btn" style="visibility:hidden"><img src="images/back.png" /></div>			
+		</div>
+		<div id="panel-bg"></div>
+		
+		<div id="content">
+			<div id="pageContent"></div>
+		</div>
+	</div>
+	
+	<div id="list4">
+		<div id="panel">
+			<div id="btn" onclick="backToMain()"><img src="images/back.png" /></div>
+			<div class="title" id="sub-title2">NAME</div>
+			<div id="btn" style="visibility:hidden"><img src="images/back.png" /></div>			
+		</div>
+		<div id="panel-bg"></div>
+		
+		<div id="list">
+			<div id="items" class="items2">
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
